@@ -1,0 +1,57 @@
+pipeline {
+ 
+   
+
+    agent any
+    stages {
+        stage("Cloning Project"){
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/mehdybenromdhane/GestionProjet.git'
+                echo 'checkout stage'
+            }
+        }
+       
+        stage ('maven clean') {
+      steps {
+        bat 'mvn clean -e'
+        echo 'Build stage done'
+      }
+    }
+   
+        stage("compile Project"){
+        steps {
+            bat 'mvn compile -X -e'
+            echo 'compile stage done'
+            }
+        }
+        stage("unit tests"){
+            steps {
+                 bat 'mvn test'
+                  echo 'unit tests stage done'
+            }
+        }
+           stage('Sonar Test') {
+             steps {
+               bat 'mvn sonar:sonar -Dsonar.projectKey=projet -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqp_2946cafccb6817ed6464d6263a0e40c3a0f3f63c'
+          }
+       }
+         
+        stage('maven package') {
+             steps {
+               bat 'mvn package'
+          }
+       
+          }
+          
+           stage('Deploy to nexus ') {
+             steps {
+               bat 'mvn deploy:deploy-file -DgroupId=tn.esprit.spring -DartifactId=gestion_projet -Dversion=1.0 -DgeneratePom=true -Dpackaging=jar -DrepositoryId=deploymentRepo -Durl=http://localhost:8081/repository/maven-releases/ -Dfile=target/gestion_projet-1.0.jar -DskipTests'
+          }
+       
+          }
+          
+          
+          
+    }}
+    
